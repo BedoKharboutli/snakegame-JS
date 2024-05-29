@@ -5,13 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Snake Game</title>
     <style>
+      @keyframes gradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
       body {
+        background: linear-gradient(270deg, #180333, #111010, #1b1d3d);
+        background-size: 600% 600%;
+        animation: gradient 20s ease infinite;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
         margin: 0;
-        background-color: #000;
       }
       canvas {
         border: 1px solid #fff;
