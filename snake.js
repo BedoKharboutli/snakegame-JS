@@ -48,7 +48,12 @@ function drawDiamond(x, y, color) {
 function drawSnakeSegment(x, y, color) {
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(x + box / 2, y + box / 2, box / 2, 0, Math.PI * 2); // Circle segment
+  ctx.moveTo(x + box * 0.1, y + box * 0.2);
+  ctx.quadraticCurveTo(x + box / 2, y, x + box * 0.9, y + box * 0.2);
+  ctx.quadraticCurveTo(x + box, y + box / 2, x + box * 0.9, y + box * 0.8);
+  ctx.quadraticCurveTo(x + box / 2, y + box, x + box * 0.1, y + box * 0.8);
+  ctx.quadraticCurveTo(x, y + box / 2, x + box * 0.1, y + box * 0.2);
+  ctx.closePath();
   ctx.fill();
 }
 
