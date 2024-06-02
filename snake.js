@@ -103,3 +103,44 @@ function draw() {
 }
 
 let game = setInterval(draw, 125);
+
+// Touch control variables
+let touchStartX = 0;
+let touchStartY = 0;
+let touchEndX = 0;
+let touchEndY = 0;
+
+canvas.addEventListener("touchstart", function (event) {
+  touchStartX = event.touches[0].clientX;
+  touchStartY = event.touches[0].clientY;
+});
+
+canvas.addEventListener("touchmove", function (event) {
+  touchEndX = event.touches[0].clientX;
+  touchEndY = event.touches[0].clientY;
+});
+
+canvas.addEventListener("touchend", function () {
+  handleSwipe();
+});
+
+function handleSwipe() {
+  let diffX = touchEndX - touchStartX;
+  let diffY = touchEndY - touchStartY;
+
+  if (Math.abs(diffX) > Math.abs(diffY)) {
+    // Horizontal swipe
+    if (diffX > 0 && d != "LEFT") {
+      d = "RIGHT";
+    } else if (diffX < 0 && d != "RIGHT") {
+      d = "LEFT";
+    }
+  } else {
+    // Vertical swipe
+    if (diffY > 0 && d != "UP") {
+      d = "DOWN";
+    } else if (diffY < 0 && d != "DOWN") {
+      d = "UP";
+    }
+  }
+}
