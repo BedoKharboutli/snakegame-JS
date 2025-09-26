@@ -40,6 +40,7 @@ let xDown = null;
 let yDown = null;
 
 function handleTouchStart(evt) {
+  evt.preventDefault(); // Prevent scrolling
   const firstTouch = evt.touches[0];
   xDown = firstTouch.clientX;
   yDown = firstTouch.clientY;
@@ -50,40 +51,47 @@ function handleTouchMove(evt) {
     return;
   }
 
+  evt.preventDefault(); // Prevent scrolling
+
   let xUp = evt.touches[0].clientX;
   let yUp = evt.touches[0].clientY;
 
   let xDiff = xDown - xUp;
   let yDiff = yDown - yUp;
 
-  if (Math.abs(xDiff) > Math.abs(yDiff)) {
-    if (xDiff > 0) {
-      /* left swipe */
-      if (d != "RIGHT") {
-        d = "LEFT";
+  // Minimum swipe distance to register
+  const minSwipeDistance = 30;
+  
+  if (Math.abs(xDiff) > minSwipeDistance || Math.abs(yDiff) > minSwipeDistance) {
+    if (Math.abs(xDiff) > Math.abs(yDiff)) {
+      if (xDiff > 0) {
+        /* left swipe */
+        if (d != "RIGHT") {
+          d = "LEFT";
+        }
+      } else {
+        /* right swipe */
+        if (d != "LEFT") {
+          d = "RIGHT";
+        }
       }
     } else {
-      /* right swipe */
-      if (d != "LEFT") {
-        d = "RIGHT";
+      if (yDiff > 0) {
+        /* up swipe */
+        if (d != "DOWN") {
+          d = "UP";
+        }
+      } else {
+        /* down swipe */
+        if (d != "UP") {
+          d = "DOWN";
+        }
       }
     }
-  } else {
-    if (yDiff > 0) {
-      /* up swipe */
-      if (d != "DOWN") {
-        d = "UP";
-      }
-    } else {
-      /* down swipe */
-      if (d != "UP") {
-        d = "DOWN";
-      }
-    }
+    /* reset values */
+    xDown = null;
+    yDown = null;
   }
-  /* reset values */
-  xDown = null;
-  yDown = null;
 }
 
 function direction(event) {
@@ -255,8 +263,52 @@ function showGameOver() {
   gameOverOverlay.style.display = 'flex';
 }
 
+// Touch control buttons
+function handleControlButton(direction) {
+  if (direction === "UP" && d !== "DOWN") {
+    d = "UP";
+  } else if (direction === "DOWN" && d !== "UP") {
+    d = "DOWN";
+  } else if (direction === "LEFT" && d !== "RIGHT") {
+    d = "LEFT";
+  } else if (direction === "RIGHT" && d !== "LEFT") {
+    d = "RIGHT";
+  }
+}
+
 // Event listeners
 playAgainBtn.addEventListener('click', initGame);
+
+// Add touch control button listeners
+document.querySelectorAll('.control-btn').forEach(btn => {
+  btn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const direction = btn.getAttribute('data-direction');
+    handleControlButton(direction);
+  });
+  
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const direction = btn.getAttribute('data-direction');
+    handleControlButton(direction);
+  });
+});
+
+// Prevent zoom on double tap
+document.addEventListener('touchstart', function(event) {
+  if (event.touches.length > 1) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function(event) {
+  const now = (new Date()).getTime();
+  if (now - lastTouchEnd <= 300) {
+    event.preventDefault();
+  }
+  lastTouchEnd = now;
+}, { passive: false });
 
 // Initialize the game
 initGame();

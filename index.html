@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Snake Game - Modern Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -205,32 +205,122 @@
         font-size: 1.2rem;
       }
 
+      .touch-controls {
+        display: none;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 10px;
+        width: 200px;
+        height: 200px;
+        margin-top: 20px;
+      }
+
+      .control-btn {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        color: #ffffff;
+        font-size: 1.5rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+      }
+
+      .control-btn:active {
+        background: rgba(0, 255, 127, 0.3);
+        border-color: rgba(0, 255, 127, 0.5);
+        transform: scale(0.95);
+      }
+
+      .control-up { grid-column: 2; grid-row: 1; }
+      .control-left { grid-column: 1; grid-row: 2; }
+      .control-right { grid-column: 3; grid-row: 2; }
+      .control-down { grid-column: 2; grid-row: 3; }
+
       @media (max-width: 768px) {
+        body {
+          padding: 10px;
+        }
+
         .game-title {
-          font-size: 2rem;
+          font-size: 2.5rem;
+        }
+        
+        .game-subtitle {
+          font-size: 1rem;
         }
         
         .back-button {
-          top: 20px;
-          left: 20px;
-          padding: 10px 16px;
+          top: 15px;
+          left: 15px;
+          padding: 8px 14px;
           font-size: 0.8rem;
         }
         
         canvas {
-          width: 95vw;
+          width: 100vw;
+          max-width: 100vw;
           height: auto;
-          max-width: 800px;
         }
         
         .canvas-container {
-          width: 95vw;
-          max-width: 800px;
+          width: 100vw;
+          max-width: 100vw;
+          margin: 0 -10px;
         }
         
         .game-info {
           flex-direction: column;
           gap: 15px;
+          width: 100%;
+        }
+
+        .score-display {
+          font-size: 1rem;
+          padding: 10px 16px;
+        }
+
+        .controls-hint {
+          display: none;
+        }
+
+        .touch-controls {
+          display: grid;
+        }
+
+        .game-over-title {
+          font-size: 2rem;
+        }
+
+        .final-score {
+          font-size: 1.2rem;
+        }
+
+        .play-again-btn {
+          padding: 12px 24px;
+          font-size: 0.9rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .game-title {
+          font-size: 2rem;
+        }
+
+        .touch-controls {
+          width: 180px;
+          height: 180px;
+        }
+
+        .control-btn {
+          font-size: 1.2rem;
         }
       }
     </style>
@@ -262,6 +352,13 @@
         <div class="controls-hint">
           Use arrow keys or swipe to control the snake
         </div>
+      </div>
+
+      <div class="touch-controls">
+        <button class="control-btn control-up" data-direction="UP">↑</button>
+        <button class="control-btn control-left" data-direction="LEFT">←</button>
+        <button class="control-btn control-right" data-direction="RIGHT">→</button>
+        <button class="control-btn control-down" data-direction="DOWN">↓</button>
       </div>
     </div>
 
