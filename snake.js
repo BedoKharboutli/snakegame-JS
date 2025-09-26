@@ -1,16 +1,37 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+const scoreElement = document.getElementById("score");
+const gameOverOverlay = document.getElementById("gameOverOverlay");
+const finalScoreElement = document.getElementById("finalScore");
+const playAgainBtn = document.getElementById("playAgainBtn");
 
 const box = 20;
+const maxX = Math.floor(canvas.width / box) - 1;
+const maxY = Math.floor(canvas.height / box) - 1;
+
 let snake = [];
-snake[0] = { x: 9 * box, y: 10 * box };
-
-let food = {
-  x: Math.floor(Math.random() * 29 + 1) * box,
-  y: Math.floor(Math.random() * 19 + 1) * box,
-};
-
+let food = {};
+let score = 0;
 let d;
+let game;
+
+function initGame() {
+  snake = [];
+  snake[0] = { x: 9 * box, y: 10 * box };
+  
+  food = {
+    x: Math.floor(Math.random() * maxX + 1) * box,
+    y: Math.floor(Math.random() * maxY + 1) * box,
+  };
+  
+  score = 0;
+  scoreElement.textContent = score;
+  d = undefined;
+  gameOverOverlay.style.display = 'none';
+  
+  if (game) clearInterval(game);
+  game = setInterval(draw, 125);
+}
 document.addEventListener("keydown", direction);
 canvas.addEventListener("touchstart", handleTouchStart, false);
 canvas.addEventListener("touchmove", handleTouchMove, false);
@@ -86,39 +107,112 @@ function collision(newHead, array) {
   return false;
 }
 
-function drawDiamond(x, y, color) {
-  ctx.fillStyle = color;
+function drawFood(x, y) {
+  // Create a glowing food effect
+  const centerX = x + box / 2;
+  const centerY = y + box / 2;
+  const radius = box / 3;
+  
+  // Outer glow
+  const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius * 2);
+  gradient.addColorStop(0, 'rgba(255, 100, 100, 0.8)');
+  gradient.addColorStop(0.7, 'rgba(255, 50, 50, 0.4)');
+  gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+  
+  ctx.fillStyle = gradient;
   ctx.beginPath();
-  ctx.moveTo(x + box / 2, y); // Top
-  ctx.lineTo(x + box, y + box / 2); // Right
-  ctx.lineTo(x + box / 2, y + box); // Bottom
-  ctx.lineTo(x, y + box / 2); // Left
-  ctx.closePath();
+  ctx.arc(centerX, centerY, radius * 2, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Main food body
+  ctx.fillStyle = '#ff4757';
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Inner highlight
+  ctx.fillStyle = '#ff6b7a';
+  ctx.beginPath();
+  ctx.arc(centerX - radius/3, centerY - radius/3, radius/2, 0, Math.PI * 2);
   ctx.fill();
 }
 
-function drawSnakeSegment(x, y, color) {
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.moveTo(x + box * 0.1, y + box * 0.2);
-  ctx.quadraticCurveTo(x + box / 2, y, x + box * 0.9, y + box * 0.2);
-  ctx.quadraticCurveTo(x + box, y + box / 2, x + box * 0.9, y + box * 0.8);
-  ctx.quadraticCurveTo(x + box / 2, y + box, x + box * 0.1, y + box * 0.8);
-  ctx.quadraticCurveTo(x, y + box / 2, x + box * 0.1, y + box * 0.2);
-  ctx.closePath();
-  ctx.fill();
+function drawSnakeSegment(x, y, isHead = false) {
+  const centerX = x + box / 2;
+  const centerY = y + box / 2;
+  const radius = box / 2.5;
+  
+  if (isHead) {
+    // Head with glow effect
+    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius * 1.5);
+    gradient.addColorStop(0, '#00ff7f');
+    gradient.addColorStop(0.7, '#00cc66');
+    gradient.addColorStop(1, 'rgba(0, 255, 127, 0.3)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius * 1.2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Head body
+    ctx.fillStyle = '#00ff7f';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eyes
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(centerX - radius/3, centerY - radius/3, radius/6, 0, Math.PI * 2);
+    ctx.arc(centerX + radius/3, centerY - radius/3, radius/6, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    // Body segments with gradient
+    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+    gradient.addColorStop(0, '#32ff7e');
+    gradient.addColorStop(1, '#18d26e');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Inner highlight
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.beginPath();
+    ctx.arc(centerX - radius/3, centerY - radius/3, radius/3, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 function draw() {
+  // Create a subtle grid background
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  for (let i = 0; i < snake.length; i++) {
-    const color = i == 0 ? "green" : "lime";
-    drawSnakeSegment(snake[i].x, snake[i].y, color);
+  
+  // Draw subtle grid lines
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= canvas.width; i += box) {
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i, canvas.height);
+    ctx.stroke();
+  }
+  for (let i = 0; i <= canvas.height; i += box) {
+    ctx.beginPath();
+    ctx.moveTo(0, i);
+    ctx.lineTo(canvas.width, i);
+    ctx.stroke();
   }
 
-  drawDiamond(food.x, food.y, "red");
+  // Draw snake
+  for (let i = 0; i < snake.length; i++) {
+    drawSnakeSegment(snake[i].x, snake[i].y, i === 0);
+  }
+
+  // Draw food
+  drawFood(food.x, food.y);
 
   let snakeX = snake[0].x;
   let snakeY = snake[0].y;
@@ -129,9 +223,12 @@ function draw() {
   if (d == "DOWN") snakeY += box;
 
   if (snakeX == food.x && snakeY == food.y) {
+    score += 10;
+    scoreElement.textContent = score;
+    
     food = {
-      x: Math.floor(Math.random() * 29 + 1) * box,
-      y: Math.floor(Math.random() * 19 + 1) * box,
+      x: Math.floor(Math.random() * maxX + 1) * box,
+      y: Math.floor(Math.random() * maxY + 1) * box,
     };
   } else {
     snake.pop();
@@ -147,11 +244,19 @@ function draw() {
     collision(newHead, snake)
   ) {
     clearInterval(game);
-    alert("Game Over");
-    alert("Refresh the page to restart the game ");
+    showGameOver();
   }
 
   snake.unshift(newHead);
 }
 
-let game = setInterval(draw, 125);
+function showGameOver() {
+  finalScoreElement.textContent = score;
+  gameOverOverlay.style.display = 'flex';
+}
+
+// Event listeners
+playAgainBtn.addEventListener('click', initGame);
+
+// Initialize the game
+initGame();
